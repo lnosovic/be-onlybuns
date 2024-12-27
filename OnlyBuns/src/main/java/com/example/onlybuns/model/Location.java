@@ -1,10 +1,22 @@
 package com.example.onlybuns.model;
 
+import javax.persistence.*;
+
+import java.util.Objects;
+
+@Entity
+@Table(name = "location")
 public class Location {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(name = "longitude",nullable = false)
     private double longitude;
+    @Column(name = "latitude",nullable = false)
     private double latitude;
-    private String Country;
+    @Column(name = "country",nullable = false)
+    private String country;
+    @Column(name = "city",nullable = false)
     private String city;
 
     public Location() {
@@ -14,7 +26,7 @@ public class Location {
         this.id = id;
         this.longitude = longitude;
         this.latitude = latitude;
-        Country = country;
+        this.country = country;
         this.city = city;
     }
 
@@ -43,11 +55,11 @@ public class Location {
     }
 
     public String getCountry() {
-        return Country;
+        return country;
     }
 
     public void setCountry(String country) {
-        Country = country;
+        country = country;
     }
 
     public String getCity() {
@@ -56,5 +68,29 @@ public class Location {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "id=" + id +
+                ", longitude=" + longitude +
+                ", latitude=" + latitude +
+                ", Country='" + country + '\'' +
+                ", city='" + city + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Location location = (Location) o;
+        return Objects.equals(id, location.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
