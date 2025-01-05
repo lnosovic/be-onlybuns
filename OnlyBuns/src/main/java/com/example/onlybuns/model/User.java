@@ -229,4 +229,13 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+    public int getPostCount(){
+        return posts!=null?posts.size():0;
+    }
+    public int getFollowerCount(){
+        return followers!=null?followers.size():0;
+    }
+    public int getFollowingCount(){
+        return followings!=null?followings.size():0;
+    }
 }

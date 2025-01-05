@@ -136,4 +136,7 @@ public class Post {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+    public int getLikesCount(){
+        return likes.size();
+    }
 }

@@ -2,6 +2,7 @@ package com.example.onlybuns.service.impl;
 
 import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
+import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.mapper.LocationDTOMapper;
 import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.Role;
@@ -68,5 +69,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User updatedUser) throws AccessDeniedException {
         return userRepository.save(updatedUser);
+    }
+    @Override
+    public UserViewDTO getUserById(Integer id){
+        List<User> users = userRepository.findAll();
+        UserViewDTO dto = new UserViewDTO();
+        for (User user : users) {
+            if(user.getId().equals(id)){
+                dto.setId(user.getId());
+                dto.setUsername(user.getUsername());
+                dto.setName(user.getName());
+                dto.setSurname(user.getSurname());
+                dto.setEmail(user.getEmail());
+                dto.setRole(user.getRole());
+                dto.setPostCount(user.getPostCount());
+                dto.setFollowerCount(user.getFollowerCount());
+                dto.setFollowingCount(user.getFollowingCount());
+            }
+        }
+        return dto;
     }
 }
