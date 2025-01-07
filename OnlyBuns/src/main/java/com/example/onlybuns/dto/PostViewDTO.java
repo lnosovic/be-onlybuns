@@ -3,6 +3,8 @@ package com.example.onlybuns.dto;
 import com.example.onlybuns.model.Post;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PostViewDTO {
     private Integer id;
@@ -12,11 +14,12 @@ public class PostViewDTO {
     private LocationDTO location;
     private LocalDateTime timeOfPublishing;
     private int likes;
+    private List<CommentDTO> comments;
 
     public PostViewDTO() {
     }
 
-    public PostViewDTO(Integer id, Integer userId, String description, String image, LocationDTO location, LocalDateTime timeOfPublishing, int likes) {
+    public PostViewDTO(Integer id, Integer userId, String description, String image, LocationDTO location, LocalDateTime timeOfPublishing, int likes, List<CommentDTO> comments) {
         this.id = id;
         this.userId = userId;
         this.description = description;
@@ -24,6 +27,7 @@ public class PostViewDTO {
         this.location = location;
         this.timeOfPublishing = timeOfPublishing;
         this.likes = likes;
+        this.comments = comments;
     }
     public PostViewDTO(Post post){
         this.id = post.getId();
@@ -33,6 +37,7 @@ public class PostViewDTO {
         this.location = new LocationDTO(post.getLocation());
         this.timeOfPublishing = post.getTimeOfPublishing();
         this.likes = post.getLikesCount();
+        this.comments = post.getComments().stream().map(CommentDTO::new).toList();
     }
 
     public Integer getId() {
@@ -88,5 +93,11 @@ public class PostViewDTO {
     }
     public void setLikes(int likes) {
         this.likes = likes;
+    }
+    public List<CommentDTO> getComments() {
+        return comments;
+    }
+    public void setComments(List<CommentDTO> comments) {
+        this.comments = comments;
     }
 }

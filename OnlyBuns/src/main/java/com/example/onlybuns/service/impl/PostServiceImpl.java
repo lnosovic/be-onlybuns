@@ -1,5 +1,6 @@
 package com.example.onlybuns.service.impl;
 
+import com.example.onlybuns.dto.CommentDTO;
 import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.PostViewDTO;
 import com.example.onlybuns.model.Post;
@@ -31,6 +32,7 @@ public class PostServiceImpl implements PostService {
             postViewDTO.setLocation(locationDTO);
             postViewDTO.setTimeOfPublishing(post.getTimeOfPublishing());
             postViewDTO.setLikes(post.getLikesCount());
+            postViewDTO.setComments(post.getComments().stream().map(CommentDTO::new).toList());
             postDTOs.add(postViewDTO);
         }
         return postDTOs;
