@@ -7,9 +7,9 @@ public class UserRequest {
 
     private String password;
 
-    private String firstname;
+    private String name;
 
-    private String lastname;
+    private String surname;
 
     private String email;
     private LocationDTO location;
@@ -31,20 +31,20 @@ public class UserRequest {
         this.password = password;
     }
 
-    public String getFirstname() {
-        return firstname;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getLastname() {
-        return lastname;
+    public String getSurname() {
+        return surname;
     }
 
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public Integer getId() {

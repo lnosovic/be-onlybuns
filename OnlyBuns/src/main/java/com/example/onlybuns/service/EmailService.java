@@ -8,7 +8,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,14 +29,16 @@ public class EmailService {
     public void sendNotificaitionSync(UserRequest user) throws MailException, InterruptedException {
         System.out.println("Sync metoda se izvrsava u istom Threadu koji je i prihvatio zahtev. Thread id: " + Thread.currentThread().getId());
         //Simulacija duze aktivnosti da bi se uocila razlika
-        Thread.sleep(10000);
+        //Thread.sleep(10000);
         System.out.println("Slanje emaila...");
 
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(user.getEmail());
         mail.setFrom(env.getProperty("spring.mail.username"));
-        mail.setSubject("Primer slanja emaila pomocu asinhronog Spring taska");
-        mail.setText("Pozdrav " + user.getFirstname() + ",\n\nhvala što pratiš ISA.");
+        mail.setSubject("Aktivacija naloga OnlyBuns");
+        User request = userRepository.findByUsername(user.getUsername());
+        String link = "http://localhost:4200/activation/" + request.getId();
+        mail.setText("Pozdrav " + user.getName() + ",\n\nhvala što ste se pridružili OnlyBuns.\n\n Klikni na sledeći link za aktivaciju naloga:\n" + link);
         javaMailSender.send(mail);
 
         System.out.println("Email poslat!");

@@ -1,14 +1,11 @@
 package com.example.onlybuns.service.impl;
 
-import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
 import com.example.onlybuns.dto.UserViewDTO;
-import com.example.onlybuns.mapper.LocationDTOMapper;
 import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.Role;
 import com.example.onlybuns.model.User;
 import com.example.onlybuns.repository.UserRepository;
-import com.example.onlybuns.service.LocationService;
 import com.example.onlybuns.service.RoleService;
 import com.example.onlybuns.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +51,8 @@ public class UserServiceImpl implements UserService {
         // treba voditi racuna da se koristi isi password encoder bean koji je postavljen u AUthenticationManager-u kako bi koristili isti algoritam
         u.setPassword(passwordEncoder.encode(userRequest.getPassword()));
 
-        u.setName(userRequest.getFirstname());
-        u.setSurname(userRequest.getLastname());
+        u.setName(userRequest.getName());
+        u.setSurname(userRequest.getSurname());
         u.setActivated(false);
         u.setEmail(userRequest.getEmail());
         Location location =locationServiceImpl.createLocation(userRequest.getLocation());
