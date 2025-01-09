@@ -10,7 +10,7 @@ insert into post(user_id,description,image,location_id,time_of_publishing) value
 insert into post(user_id,description,image,location_id,time_of_publishing) values(1, 'Short description','image1',1,'2017-10-01 20:30:00');
 
 
-insert into comment(user_id,post_id,description,created_at) values(1,1,'Good Work!!','2017-10-01 21:30:00');
+insert into comment(user_id,post_id,text,created_at) values(1,1,'Good Work!!','2017-10-01 21:30:00');
 
 insert into user_relationships(follower_user_id,followed_user_id) values(1,2);
 

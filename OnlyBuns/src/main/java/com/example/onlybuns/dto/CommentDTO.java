@@ -7,21 +7,21 @@ import java.time.LocalDateTime;
 public class CommentDTO {
     public Integer id;
     public int UserId;
-    public String comment;
+    public String text;
     public String creatorUsername;
     public LocalDateTime createdAt;
     public CommentDTO(){}
-    public CommentDTO(Integer id, int UserId, String Comment, String creatorUsername, LocalDateTime createdAt) {
+    public CommentDTO(Integer id, int UserId, String text, String creatorUsername, LocalDateTime createdAt) {
         this.id = id;
         this.UserId = UserId;
-        this.comment = Comment;
+        this.text = text;
         this.creatorUsername = creatorUsername;
         this.createdAt = createdAt;
     }
     public CommentDTO(Comment comment){
         this.id = comment.getId();
         this.UserId = comment.getUser().getId();
-        this.comment = comment.getComment();
+        this.text = comment.getText();
         this.creatorUsername = comment.getUser().getUsername();
         this.createdAt = comment.getCreatedAt();
     }
@@ -42,12 +42,12 @@ public class CommentDTO {
         UserId = userId;
     }
 
-    public String getComment() {
-        return comment;
+    public String getText() {
+        return text;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public String getCreatorUsername() {
