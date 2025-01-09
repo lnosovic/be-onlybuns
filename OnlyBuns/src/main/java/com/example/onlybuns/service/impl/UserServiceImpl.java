@@ -1,5 +1,6 @@
 package com.example.onlybuns.service.impl;
 
+import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
 import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.model.Location;
@@ -79,11 +80,64 @@ public class UserServiceImpl implements UserService {
                 dto.setSurname(user.getSurname());
                 dto.setEmail(user.getEmail());
                 dto.setRole(user.getRole());
+                dto.setLocation(new LocationDTO(user.getAddress()));
                 dto.setPostCount(user.getPostCount());
                 dto.setFollowerCount(user.getFollowerCount());
                 dto.setFollowingCount(user.getFollowingCount());
             }
         }
         return dto;
+    }
+    public UserViewDTO getUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
+        UserViewDTO dto = new UserViewDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setName(user.getName());
+        dto.setSurname(user.getSurname());
+        dto.setRole(user.getRole());
+        dto.setEmail(user.getEmail());
+        dto.setLocation(new LocationDTO(user.getAddress()));
+        dto.setPostCount(user.getPostCount());
+        dto.setFollowerCount(user.getFollowerCount());
+        dto.setFollowingCount(user.getFollowingCount());
+        return dto;
+    }
+    @Override
+    public List<UserViewDTO> getFollowingUsers(Integer userId){
+        List<User> followings = userRepository.findFollowingUsers(userId);
+        return followings.stream().map(user ->{
+            UserViewDTO dto = new UserViewDTO();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setName(user.getName());
+            dto.setSurname(user.getSurname());
+            dto.setRole(user.getRole());
+            dto.setEmail(user.getEmail());
+            dto.setLocation(new LocationDTO(user.getAddress()));
+            dto.setPostCount(user.getPostCount());
+            dto.setFollowerCount(user.getFollowerCount());
+            dto.setFollowingCount(user.getFollowingCount());
+            return dto;
+        }).toList();
+
+    }
+    @Override
+    public List<UserViewDTO> getFollowerUsers(Integer userId){
+        List<User> followers = userRepository.findFollowerUsers(userId);
+        return followers.stream().map(user ->{
+            UserViewDTO dto = new UserViewDTO();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setName(user.getName());
+            dto.setSurname(user.getSurname());
+            dto.setRole(user.getRole());
+            dto.setEmail(user.getEmail());
+            dto.setLocation(new LocationDTO(user.getAddress()));
+            dto.setPostCount(user.getPostCount());
+            dto.setFollowerCount(user.getFollowerCount());
+            dto.setFollowingCount(user.getFollowingCount());
+            return dto;
+        }).toList();
     }
 }

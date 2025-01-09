@@ -1,5 +1,6 @@
 package com.example.onlybuns.dto;
 
+import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.Role;
 import com.example.onlybuns.model.User;
 
@@ -10,17 +11,19 @@ public class UserViewDTO {
     private String surname;
     private String email;
     private Role role;
+    private LocationDTO location;
     private int postCount;
     private int followerCount;
     private int followingCount;
     public UserViewDTO() {}
-    public UserViewDTO(Integer id, String username, String name, String surname, String email, Role role,int postCount,int followerCount,int followingCount) {
+    public UserViewDTO(Integer id, String username, String name, String surname, String email,LocationDTO location, Role role,int postCount,int followerCount,int followingCount) {
         this.id = id;
         this.username = username;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.role = role;
+        this.location = location;
         this.postCount = postCount;
         this.followerCount = followerCount;
         this.followingCount = followingCount;
@@ -32,6 +35,7 @@ public class UserViewDTO {
         this.surname = user.getSurname();
         this.email = user.getEmail();
         this.role = user.getRole();
+        this.location = new LocationDTO(user.getAddress());
         this.postCount = user.getPostCount();
         this.followerCount = user.getFollowerCount();
         this.followingCount = user.getFollowingCount();
@@ -83,6 +87,12 @@ public class UserViewDTO {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public LocationDTO getLocation() {
+        return location;
+    }
+    public void setLocation(LocationDTO location) {
+        this.location = location;
     }
     public int getPostCount() {
         return postCount;

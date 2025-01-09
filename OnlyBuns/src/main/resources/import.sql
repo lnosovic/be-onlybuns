@@ -12,6 +12,6 @@ insert into post(user_id,description,image,location_id,time_of_publishing) value
 
 insert into comment(user_id,post_id,description,created_at) values(1,1,'Good Work!!','2017-10-01 21:30:00');
 
-insert into user_following(follower_user_id,followed_user_id) values(1,2);
+insert into user_relationships(follower_user_id,followed_user_id) values(1,2);
 
 insert into post_user_likes(post_id,user_id) values(1,1)

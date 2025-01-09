@@ -7,11 +7,13 @@ import com.example.onlybuns.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,16 @@ public class UserController {
     }
     @GetMapping("/profile/{id}")
     public UserViewDTO getUserInfo(@PathVariable Integer id){return this.userService.getUserById(id);}
-
+    @GetMapping("/userInfo")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public UserViewDTO user(Principal user){return this.userService.getUserByUsername(user.getName());}
+    @GetMapping("/following/{userId}")
+    public List<UserViewDTO> getFollowing(@PathVariable Integer userId){
+        return userService.getFollowingUsers(userId);
+    }
+    @GetMapping("/followers/{userId}")
+    public List<UserViewDTO> getFollowers(@PathVariable Integer userId){
+        return userService.getFollowerUsers(userId);
+    }
 
 }

@@ -1,5 +1,7 @@
 package com.example.onlybuns.dto;
 
+import com.example.onlybuns.model.User;
+
 public class UserRequest {
     private Integer id;
 
@@ -15,6 +17,17 @@ public class UserRequest {
     private LocationDTO location;
     private boolean isActivated =false;
 
+    public UserRequest() {}
+    public UserRequest(User user){
+        this.id=user.getId();
+        this.username=user.getUsername();
+        this.password=user.getPassword();
+        this.name=user.getName();
+        this.surname=user.getSurname();
+        this.email=user.getEmail();
+        this.location = new LocationDTO(user.getAddress());
+        this.isActivated=user.isActivated();
+    }
     public String getUsername() {
         return username;
     }

@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface PostService {
     List<PostViewDTO> getAllPosts();
+    List<PostViewDTO> getAllUserPosts(Integer userId);
 }

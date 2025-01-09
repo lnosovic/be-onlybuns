@@ -13,4 +13,7 @@ public interface UserService {
     User save(UserRequest userRequest);
     User updateUser(User updatedUser);
     UserViewDTO getUserById(Integer id);
+    UserViewDTO getUserByUsername(String username);
+    List<UserViewDTO> getFollowingUsers(Integer userId);
+    List<UserViewDTO> getFollowerUsers(Integer userId);
 }
