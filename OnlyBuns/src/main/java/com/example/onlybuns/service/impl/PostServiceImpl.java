@@ -9,6 +9,9 @@ import com.example.onlybuns.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.View;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +58,54 @@ public class PostServiceImpl implements PostService {
                 postViewDTO.setComments(post.getComments().stream().map(CommentDTO::new).toList());
                 dto.add(postViewDTO);
             }
+        }
+        return dto;
+    }
+    @Override
+    public int getAllPostsCount(){
+        return postRepository.countTotalPosts();
+    }
+    @Override
+    public int getPostsCountInLastMonth(){
+        LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1);
+        return postRepository.countPostsInLastMonth(lastMonth);
+    }
+    @Override
+    public List<PostViewDTO> getTop5MostLikedPostsInLast7Days(){
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        List<Post> posts = postRepository.findTop5MostLikedPostsInLast7Days(sevenDaysAgo);
+        List<PostViewDTO> dto = new ArrayList<>();
+        for(Post post:posts){
+            PostViewDTO postViewDTO = new PostViewDTO();
+            postViewDTO.setId(post.getId());
+            postViewDTO.setUserId(post.getUser().getId());
+            postViewDTO.setDescription(post.getDescription());
+            postViewDTO.setImage(post.getImage());
+            LocationDTO locationDTO = new LocationDTO(post.getLocation());
+            postViewDTO.setLocation(locationDTO);
+            postViewDTO.setTimeOfPublishing(post.getTimeOfPublishing());
+            postViewDTO.setLikes(post.getLikesCount());
+            postViewDTO.setComments(post.getComments().stream().map(CommentDTO::new).toList());
+            dto.add(postViewDTO);
+        }
+        return dto;
+    }
+    @Override
+    public List<PostViewDTO>  getTop10MostLikedPostsEver(){
+        List<Post> posts = postRepository.findTop10MostLikedPostsEver();
+        List<PostViewDTO> dto = new ArrayList<>();
+        for(Post post:posts){
+            PostViewDTO postViewDTO = new PostViewDTO();
+            postViewDTO.setId(post.getId());
+            postViewDTO.setUserId(post.getUser().getId());
+            postViewDTO.setDescription(post.getDescription());
+            postViewDTO.setImage(post.getImage());
+            LocationDTO locationDTO = new LocationDTO(post.getLocation());
+            postViewDTO.setLocation(locationDTO);
+            postViewDTO.setTimeOfPublishing(post.getTimeOfPublishing());
+            postViewDTO.setLikes(post.getLikesCount());
+            postViewDTO.setComments(post.getComments().stream().map(CommentDTO::new).toList());
+            dto.add(postViewDTO);
         }
         return dto;
     }

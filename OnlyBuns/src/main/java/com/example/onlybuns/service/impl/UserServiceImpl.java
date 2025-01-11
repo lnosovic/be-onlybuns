@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -139,5 +141,26 @@ public class UserServiceImpl implements UserService {
             dto.setFollowingCount(user.getFollowingCount());
             return dto;
         }).toList();
+    }
+    @Override
+    public List<UserViewDTO> getTop10MostUserLikesInLast7Days(){
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        List<User> users = userRepository.findTop10MostUserLikesInLast7Days(sevenDaysAgo);
+        List<UserViewDTO> dtos = new ArrayList<UserViewDTO>();
+        for (User user : users) {
+            UserViewDTO dto = new UserViewDTO();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setName(user.getName());
+            dto.setSurname(user.getSurname());
+            dto.setRole(user.getRole());
+            dto.setEmail(user.getEmail());
+            dto.setLocation(new LocationDTO(user.getAddress()));
+            dto.setPostCount(user.getPostCount());
+            dto.setFollowerCount(user.getFollowerCount());
+            dto.setFollowingCount(user.getFollowingCount());
+            dtos.add(dto);
+        }
+        return dtos;
     }
 }
