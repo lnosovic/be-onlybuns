@@ -6,6 +6,8 @@ import com.example.onlybuns.dto.PostViewDTO;
 import com.example.onlybuns.model.Post;
 import com.example.onlybuns.repository.PostRepository;
 import com.example.onlybuns.service.PostService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
+    private final Logger LOG = LoggerFactory.getLogger(PostServiceImpl.class);
     @Autowired
     private PostRepository postRepository;
     @Override
@@ -108,5 +111,9 @@ public class PostServiceImpl implements PostService {
             dto.add(postViewDTO);
         }
         return dto;
+    }
+    public void removeFromCache() {
+        LOG.info("Products removed from cache!");
+
     }
 }
