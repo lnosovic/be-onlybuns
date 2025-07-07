@@ -1,0 +1,94 @@
+package com.example.onlybuns.dto;
+
+import com.example.onlybuns.model.User;
+
+public class UserRequest {
+    private Integer id;
+
+    private String username;
+
+    private String password;
+
+    private String name;
+
+    private String surname;
+
+    private String email;
+    private LocationDTO location;
+    private boolean isActivated =false;
+
+    public UserRequest() {}
+    public UserRequest(User user){
+        this.id=user.getId();
+        this.username=user.getUsername();
+        this.password=user.getPassword();
+        this.name=user.getName();
+        this.surname=user.getSurname();
+        this.email=user.getEmail();
+        this.location = new LocationDTO(user.getAddress());
+        this.isActivated=user.isActivated();
+    }
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public LocationDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationDTO location) {
+        this.location = location;
+    }
+
+    public boolean isActivated() {
+        return isActivated;
+    }
+
+    public void setActivated(boolean activated) {
+        isActivated = activated;
+    }
+}

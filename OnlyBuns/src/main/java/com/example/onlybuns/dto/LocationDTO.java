@@ -3,7 +3,7 @@ package com.example.onlybuns.dto;
 import com.example.onlybuns.model.Location;
 
 public class LocationDTO {
-    private int id;
+    private Integer id;
     private double longitude;
     private double latitude;
     private String country;
@@ -12,7 +12,7 @@ public class LocationDTO {
     public LocationDTO() {
     }
 
-    public LocationDTO(int id, double longitude, double latitude, String country, String city) {
+    public LocationDTO(Integer id, double longitude, double latitude, String country, String city) {
         this.id = id;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -27,11 +27,11 @@ public class LocationDTO {
         this.city = location.getCity();
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

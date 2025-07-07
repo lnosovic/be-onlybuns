@@ -59,7 +59,7 @@ public class Location {
     }
 
     public void setCountry(String country) {
-        country = country;
+        this.country = country;
     }
 
     public String getCity() {

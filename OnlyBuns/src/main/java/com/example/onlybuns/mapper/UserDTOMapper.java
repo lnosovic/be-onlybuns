@@ -1,6 +1,7 @@
 package com.example.onlybuns.mapper;
 
 import com.example.onlybuns.dto.UserDTO;
+import com.example.onlybuns.dto.UserRequest;
 import com.example.onlybuns.model.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,11 @@ public class UserDTOMapper {
     public UserDTOMapper(ModelMapper modelMapper) {
        this.modelMapper = modelMapper;
     }
-    public static User fromDTOtoUser(UserDTO dto) {
+    public static User fromDTOtoUser(UserRequest dto) {
         return modelMapper.map(dto, User.class);
     }
-    public static UserDTO fromUsertoDTO(User dto) {
-        return modelMapper.map(dto,UserDTO.class);
+    public static UserRequest fromUsertoDTO(User dto) {
+        return modelMapper.map(dto,UserRequest.class);
     }
 
 }

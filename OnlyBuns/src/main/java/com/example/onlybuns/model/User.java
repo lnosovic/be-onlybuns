@@ -31,15 +31,15 @@ public class User implements UserDetails {
     @Column(name="is_activated",nullable = false)
     private boolean isActivated = false;
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_following",
+    @JoinTable(name = "user_relationships",
             joinColumns = @JoinColumn(name = "follower_user_id"),
             inverseJoinColumns = @JoinColumn(name = "followed_user_id"))
-    private Set<User> followers = new HashSet<User>();
+    private Set<User> followings = new HashSet<User>();
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_following",
+    @JoinTable(name = "user_relationships",
             joinColumns = @JoinColumn(name = "followed_user_id"),
             inverseJoinColumns = @JoinColumn(name = "follower_user_id"))
-    private Set<User> followings =  new HashSet<User>();
+    private Set<User> followers =  new HashSet<User>();
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "user")
     private Set<Post> posts = new HashSet<Post>();
     @ManyToOne(fetch = FetchType.EAGER)
@@ -227,6 +227,15 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
+    }
+    public int getPostCount(){
+        return posts!=null?posts.size():0;
+    }
+    public int getFollowerCount(){
+        return followers!=null?followers.size():0;
+    }
+    public int getFollowingCount(){
+        return followings!=null?followings.size():0;
     }
 }

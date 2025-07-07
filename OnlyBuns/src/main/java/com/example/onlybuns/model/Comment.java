@@ -16,19 +16,19 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id", nullable=false)
     private Post post;
-    @Column(name="description",nullable = false)
-    private String comment;
+    @Column(name="text",nullable = false)
+    private String text;
     @Column(name="created_at")
     private LocalDateTime createdAt;
 
     public Comment() {
     }
 
-    public Comment(Integer id, User user,Post post, String comment, LocalDateTime createdAt) {
+    public Comment(Integer id, User user,Post post, String text, LocalDateTime createdAt) {
         this.id = id;
         this.user = user;
         this.post = post;
-        this.comment = comment;
+        this.text = text;
         this.createdAt = createdAt;
     }
 
@@ -56,12 +56,12 @@ public class Comment {
         this.post = post;
     }
 
-    public String getComment() {
-        return comment;
+    public String getText() {
+        return text;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -78,7 +78,7 @@ public class Comment {
                 "id=" + id +
                 ", user=" + user +
                 ", post=" + post +
-                ", comment='" + comment + '\'' +
+                ", text='" + text + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }
