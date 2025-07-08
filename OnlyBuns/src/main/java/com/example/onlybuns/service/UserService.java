@@ -17,4 +17,5 @@ public interface UserService {
     List<UserViewDTO> getFollowingUsers(Integer userId);
     List<UserViewDTO> getFollowerUsers(Integer userId);
     List<UserViewDTO> getTop10MostUserLikesInLast7Days();
+    User getByEmail(String email);
 }

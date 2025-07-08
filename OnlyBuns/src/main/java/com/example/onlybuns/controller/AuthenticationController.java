@@ -59,16 +59,16 @@ public class AuthenticationController {
         // AuthenticationException
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+                    authenticationRequest.getEmail(), authenticationRequest.getPassword()));
 
             // Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
             // kontekst
             SecurityContextHolder.getContext().setAuthentication(authentication);
             // Kreiraj token za tog korisnika
-            boolean isActivated = userService.findByUsername(authenticationRequest.getUsername()).isActivated();
+            boolean isActivated = userService.getByEmail(authenticationRequest.getEmail()).isActivated();
             if (isActivated) {
                 User user = (User) authentication.getPrincipal();
-                String jwt = tokenUtils.generateToken(user.getUsername());
+                String jwt = tokenUtils.generateToken(user.getEmail());
                 int expiresIn = tokenUtils.getExpiredIn();
 
                 ipRateLimiter.loginSuccess(ip);

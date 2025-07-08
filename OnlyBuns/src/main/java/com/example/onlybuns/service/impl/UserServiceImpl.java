@@ -163,4 +163,9 @@ public class UserServiceImpl implements UserService {
         }
         return dtos;
     }
+    @Override
+    public User getByEmail(String email)  throws UsernameNotFoundException {
+        return userRepository.getUserByEmail(email);
+    }
+
 }
