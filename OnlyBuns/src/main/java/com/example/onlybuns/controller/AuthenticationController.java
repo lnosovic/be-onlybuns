@@ -56,7 +56,7 @@ public class AuthenticationController {
         boolean isActivated = userService.findByUsername(authenticationRequest.getUsername()).isActivated();
         if(isActivated) {
             User user = (User) authentication.getPrincipal();
-            String jwt = tokenUtils.generateToken(user.getUsername());
+            String jwt = tokenUtils.generateToken(user.getUsername(), user.getRole().getName());
             int expiresIn = tokenUtils.getExpiredIn();
 
             // Vrati token kao odgovor na uspesnu autentifikaciju
