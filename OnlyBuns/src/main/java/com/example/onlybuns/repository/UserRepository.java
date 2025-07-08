@@ -25,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     LIMIT 10
     """,nativeQuery = true)
     List<User> findTop10MostUserLikesInLast7Days(@Param("sevenDaysAgo") LocalDateTime sevenDaysAgo);
+    @Query("SELECT u FROM User u WHERE u.isActivated = false")
+    List<User> findByIsActivatedFalse();
 }
