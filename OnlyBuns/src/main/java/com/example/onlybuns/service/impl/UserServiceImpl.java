@@ -114,6 +114,21 @@ public class UserServiceImpl implements UserService {
         dto.setFollowingCount(user.getFollowingCount());
         return dto;
     }
+    public UserViewDTO getUserByEmail(String email) throws UsernameNotFoundException {
+        User user = userRepository.getUserByEmail(email);
+        UserViewDTO dto = new UserViewDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setName(user.getName());
+        dto.setSurname(user.getSurname());
+        dto.setRole(user.getRole());
+        dto.setEmail(user.getEmail());
+        dto.setLocation(new LocationDTO(user.getAddress()));
+        dto.setPostCount(user.getPostCount());
+        dto.setFollowerCount(user.getFollowerCount());
+        dto.setFollowingCount(user.getFollowingCount());
+        return dto;
+    }
     @Override
     public List<UserViewDTO> getFollowingUsers(Integer userId){
         List<User> followings = userRepository.findFollowingUsers(userId);
