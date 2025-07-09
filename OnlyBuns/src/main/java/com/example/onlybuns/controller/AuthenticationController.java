@@ -51,14 +51,13 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<UserTokenState> createAuthenticationToken(
             @RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response, HttpServletRequest request) {
-
+        // Ukoliko kredencijali nisu ispravni, logovanje nece biti uspesno, desice se
+        // AuthenticationException
         String ip = request.getRemoteAddr();
         System.out.println("ip: " + ip);
         if (ipRateLimiter.isBlocked(ip)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
-        // Ukoliko kredencijali nisu ispravni, logovanje nece biti uspesno, desice se
-        // AuthenticationException
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     authenticationRequest.getEmail(), authenticationRequest.getPassword()));
@@ -66,14 +65,15 @@ public class AuthenticationController {
             // Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
             // kontekst
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
             // Kreiraj token za tog korisnika
             boolean isActivated = userService.getByEmail(authenticationRequest.getEmail()).isActivated();
             if (isActivated) {
                 User user = (User) authentication.getPrincipal();
-                String jwt = tokenUtils.generateToken(user.getEmail());
+                String jwt = tokenUtils.generateToken(user.getEmail(), user.getRole().getName());
                 int expiresIn = tokenUtils.getExpiredIn();
-
                 ipRateLimiter.loginSuccess(ip);
+
                 // Vrati token kao odgovor na uspesnu autentifikaciju
                 return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
             } else {
