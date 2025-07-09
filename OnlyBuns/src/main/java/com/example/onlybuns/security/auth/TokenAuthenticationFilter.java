@@ -32,7 +32,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
 
 
-        String email;
+        String username;
 
         // 1. Preuzimanje JWT tokena iz zahteva
         String authToken = tokenUtils.getToken(request);
@@ -42,12 +42,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             if (authToken != null) {
 
                 // 2. Citanje korisnickog imena iz tokena
-                email = tokenUtils.getEmailFromToken(authToken);
+                username = tokenUtils.getUsernameFromToken(authToken);
 
-                if (email != null) {
+                if (username != null) {
 
                     // 3. Preuzimanje korisnika na osnovu username-a
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     // 4. Provera da li je prosledjeni token validan
                     if (tokenUtils.validateToken(authToken, userDetails)) {
 
