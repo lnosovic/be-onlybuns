@@ -14,10 +14,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -163,4 +166,58 @@ public class UserServiceImpl implements UserService {
         }
         return dtos;
     }
+
+    //following
+    @Override
+    @Transactional()
+    public void followUser(Integer followerId, Integer followedId) {
+        User follower = userRepository.findById(followerId).orElse(null);
+        User followed = userRepository.findById(followedId).orElse(null);
+
+        if (follower == null || followed == null) {
+            System.out.println("Follower or followed user not found.");
+            return;
+        }
+        if (follower.getFollowings().contains(followed)) {
+            // Ako već prati, bacamo izuzetak da obavestimo frontend
+            throw new RuntimeException("User " + followerId + " is already following " + followedId + ".");
+        }
+
+        follower.getFollowings().add(followed);
+        //followed.getFollowers().add(follower);
+        //userRepository.save(follower);
+        //userRepository.save(followed);
+        System.out.println("User " + followerId + " is now following " + followedId + ".");
+
+    }
+    @Override
+    @Transactional
+    public void unfollowUser(Integer followerId, Integer followedId) {
+        User follower = userRepository.findById(followerId).orElse(null);
+        User followed = userRepository.findById(followedId).orElse(null);
+
+        if (follower == null || followed == null) {
+            System.out.println("Follower or followed user not found.");
+            return;
+        }
+
+        follower.getFollowings().remove(followed);
+//        followed.getFollowers().remove(follower);
+//
+//        userRepository.save(follower);
+//        userRepository.save(followed);
+
+        System.out.println("User " + followerId + " is no longer following  " + followedId + ".");
+    }
+    @Override
+    public boolean isFollowing(Integer followerId, Integer followedId) {
+        User follower = userRepository.findById(followerId).orElse(null);
+        User followed = userRepository.findById(followedId).orElse(null);
+        if (follower == null || followed == null) {
+            return false;
+        }
+
+        return follower.getFollowings().contains(followed);
+    }
+
 }

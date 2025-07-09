@@ -17,4 +17,11 @@ public interface PostService {
     List<PostViewDTO> getTop10MostLikedPostsEver();
     @CacheEvict(cacheNames = {"5mostLikedPostsInLast7Days","mostLikedPostsEver"}, allEntries = true)
     void removeFromCache();
+    PostViewDTO getPostById(Integer postId);
+
+    // --- Nove metode za lajkovanje ---
+    void likePost(Integer postId, Integer userId);
+    void unlikePost(Integer postId, Integer userId);
+    boolean isPostLikedByUser(Integer postId, Integer userId);
+    // ---------------------------------
 }

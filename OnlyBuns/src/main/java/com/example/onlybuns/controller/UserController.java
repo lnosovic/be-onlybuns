@@ -8,10 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -49,6 +50,86 @@ public class UserController {
     public ResponseEntity<List<UserViewDTO>> getTop10MostUserLikesInLast7Days(){
         List<UserViewDTO> users = userService.getTop10MostUserLikesInLast7Days();
         return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+
+    @PostMapping("/{followedId}/follow") // POST request to follow a user
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can follow
+    public ResponseEntity<String> followUser(@PathVariable Integer followedId) {
+        // Get the username of the currently logged-in user from Spring Security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // Get the follower user object
+        User follower = userService.findByUsername(currentUsername);
+
+        // Basic check if follower exists and not following self
+        if (follower == null) {
+            return new ResponseEntity<>("Follower user not found.", HttpStatus.NOT_FOUND); // 404 Not Found
+        }
+        if (follower.getId().equals(followedId)) {
+            return new ResponseEntity<>("Cannot follow yourself.", HttpStatus.BAD_REQUEST); // 400 Bad Request
+        }
+
+        try {
+            userService.followUser(follower.getId(), followedId);
+            return new ResponseEntity<>("Successfully followed user " + followedId, HttpStatus.CREATED); // 201 Created
+        } catch (RuntimeException e) {
+            // Catch any runtime exceptions from the service layer
+            System.err.println("ctrl: Error following user " + followedId + " by " + follower.getId() + ": " + e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST); // 400 Bad Request for any other service error
+        }
+    }
+
+    @DeleteMapping("/{followedId}/unfollow") // DELETE request to unfollow a user
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can unfollow
+    public ResponseEntity<String> unfollowUser(@PathVariable Integer followedId) {
+        // Get the username of the currently logged-in user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        User follower = userService.findByUsername(currentUsername);
+
+        // Basic check if follower exists and not unfollowing self
+        if (follower == null) {
+            return new ResponseEntity<>("Follower user not found.", HttpStatus.NOT_FOUND); // 404 Not Found
+        }
+        if (follower.getId().equals(followedId)) {
+            return new ResponseEntity<>("Cannot unfollow yourself.", HttpStatus.BAD_REQUEST); // 400 Bad Request
+        }
+        try {
+            userService.unfollowUser(follower.getId(), followedId);
+            return new ResponseEntity<>("Successfully unfollowed user " + followedId, HttpStatus.NO_CONTENT); // 204 No Content
+        } catch (RuntimeException e) {
+            // Catch any runtime exceptions from the service layer
+            System.err.println("Error unfollowing user " + followedId + " by " + follower.getId() + ": " + e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST); // 400 Bad Request for any other service error
+        }
+    }
+
+    @GetMapping("/{followedId}/isFollowing") // GET request to check if current user is following another user
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
+    public ResponseEntity<Boolean> isFollowing(@PathVariable Integer followedId) {
+        // Get the username of the currently logged-in user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // Get the follower user object
+        User follower = userService.findByUsername(currentUsername);
+
+        // If follower user is not found, cannot be following anyone
+        if (follower == null) {
+            return new ResponseEntity<>(false, HttpStatus.NOT_FOUND); // 404 Not Found
+        }
+
+        try {
+            boolean isFollowing = userService.isFollowing(follower.getId(), followedId);
+            return new ResponseEntity<>(isFollowing, HttpStatus.OK); // 200 OK
+        } catch (RuntimeException e) {
+            // Catch any runtime exceptions from the service layer
+            System.err.println("Error checking follow status for user " + followedId + " by " + follower.getId() + ": " + e.getMessage());
+            return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+        }
     }
 
 }

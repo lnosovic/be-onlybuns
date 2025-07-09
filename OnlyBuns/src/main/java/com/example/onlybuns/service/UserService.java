@@ -17,4 +17,7 @@ public interface UserService {
     List<UserViewDTO> getFollowingUsers(Integer userId);
     List<UserViewDTO> getFollowerUsers(Integer userId);
     List<UserViewDTO> getTop10MostUserLikesInLast7Days();
+    void followUser(Integer followerId, Integer followedId);
+    void unfollowUser(Integer followerId, Integer followedId);
+    boolean isFollowing(Integer followerId, Integer followedId);
 }
