@@ -9,6 +9,7 @@ import com.example.onlybuns.repository.UserRepository;
 import com.example.onlybuns.security.auth.IpRateLimiter;
 import com.example.onlybuns.service.EmailService;
 import com.example.onlybuns.service.UserService;
+import com.example.onlybuns.util.BloomFilter;
 import com.example.onlybuns.util.TokenUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +43,8 @@ public class AuthenticationController {
     private EmailService emailService;
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private BloomFilter bloomFilter;
 
     // Prvi endpoint koji pogadja korisnik kada se loguje.
     // Tada zna samo svoje korisnicko ime i lozinku i to prosledjuje na backend.
@@ -88,11 +90,20 @@ public class AuthenticationController {
     public ResponseEntity<User> addUser(@RequestBody UserRequest userRequest, UriComponentsBuilder ucBuilder) {
         User existUser = this.userService.findByUsername(userRequest.getUsername());
 
-        if (existUser != null) {
-            throw new ResourceConflictException(userRequest.getId(), "Username already exists");
+        if (bloomFilter.mightContain(userRequest.getUsername())) {
+            System.out.println("MOZDA IPAK POSTOJI");
+            existUser = this.userService.findByUsername(userRequest.getUsername());
+            if (existUser != null) {
+                throw new ResourceConflictException(userRequest.getId(), "Username already exists");
+            }
         }
+        existUser = this.userService.getByEmail(userRequest.getEmail());
 
+        if (existUser != null) {
+            throw new ResourceConflictException(userRequest.getId(), "Email already in use");
+        }
         User user = this.userService.save(userRequest);
+        bloomFilter.add(user.getUsername());
         System.out.println("Thread id: " + Thread.currentThread().getId());
         try {
             //slanje emaila
@@ -114,4 +125,12 @@ public class AuthenticationController {
         userService.updateUser(user); // Ažurirajte korisnika u bazi
         return ResponseEntity.ok().build(); // Vratite OK status bez tela odgovora
     }
+//    @RestControllerAdvice
+//    public class GlobalExceptionHandler {
+//
+//        @ExceptionHandler(ResourceConflictException.class)
+//        public ResponseEntity<String> handleConflict(ResourceConflictException ex) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+//        }
+//    }
 }
