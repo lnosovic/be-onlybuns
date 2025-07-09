@@ -6,9 +6,13 @@ import com.example.onlybuns.dto.UserTokenState;
 import com.example.onlybuns.exception.ResourceConflictException;
 import com.example.onlybuns.model.User;
 import com.example.onlybuns.repository.UserRepository;
+import com.example.onlybuns.security.auth.IpRateLimiter;
 import com.example.onlybuns.service.EmailService;
 import com.example.onlybuns.service.UserService;
+import com.example.onlybuns.util.BloomFilter;
 import com.example.onlybuns.util.TokenUtils;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -24,6 +29,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping(value = "/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AuthenticationController {
+    @Autowired
+    private IpRateLimiter ipRateLimiter;
     @Autowired
     private TokenUtils tokenUtils;
 
@@ -36,32 +43,44 @@ public class AuthenticationController {
     private EmailService emailService;
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private BloomFilter bloomFilter;
 
     // Prvi endpoint koji pogadja korisnik kada se loguje.
     // Tada zna samo svoje korisnicko ime i lozinku i to prosledjuje na backend.
     @PostMapping("/login")
     public ResponseEntity<UserTokenState> createAuthenticationToken(
-            @RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response) {
+            @RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response, HttpServletRequest request) {
         // Ukoliko kredencijali nisu ispravni, logovanje nece biti uspesno, desice se
         // AuthenticationException
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+        String ip = request.getRemoteAddr();
+        System.out.println("ip: " + ip);
+        if (ipRateLimiter.isBlocked(ip)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    authenticationRequest.getEmail(), authenticationRequest.getPassword()));
 
-        // Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
-        // kontekst
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
+            // kontekst
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Kreiraj token za tog korisnika
-        boolean isActivated = userService.findByUsername(authenticationRequest.getUsername()).isActivated();
-        if(isActivated) {
-            User user = (User) authentication.getPrincipal();
-            String jwt = tokenUtils.generateToken(user.getUsername(), user.getRole().getName());
-            int expiresIn = tokenUtils.getExpiredIn();
+            // Kreiraj token za tog korisnika
+            boolean isActivated = userService.getByEmail(authenticationRequest.getEmail()).isActivated();
+            if (isActivated) {
+                User user = (User) authentication.getPrincipal();
+                String jwt = tokenUtils.generateToken(user.getEmail(), user.getRole().getName());
+                int expiresIn = tokenUtils.getExpiredIn();
+                ipRateLimiter.loginSuccess(ip);
 
-            // Vrati token kao odgovor na uspesnu autentifikaciju
-            return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
-        }else{
+                // Vrati token kao odgovor na uspesnu autentifikaciju
+                return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } catch (AuthenticationException ex) {
+            ipRateLimiter.recordFailedAttempt(ip);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -71,11 +90,20 @@ public class AuthenticationController {
     public ResponseEntity<User> addUser(@RequestBody UserRequest userRequest, UriComponentsBuilder ucBuilder) {
         User existUser = this.userService.findByUsername(userRequest.getUsername());
 
-        if (existUser != null) {
-            throw new ResourceConflictException(userRequest.getId(), "Username already exists");
+        if (bloomFilter.mightContain(userRequest.getUsername())) {
+            System.out.println("MOZDA IPAK POSTOJI");
+            existUser = this.userService.findByUsername(userRequest.getUsername());
+            if (existUser != null) {
+                throw new ResourceConflictException(userRequest.getId(), "Username already exists");
+            }
         }
+        existUser = this.userService.getByEmail(userRequest.getEmail());
 
+        if (existUser != null) {
+            throw new ResourceConflictException(userRequest.getId(), "Email already in use");
+        }
         User user = this.userService.save(userRequest);
+        bloomFilter.add(user.getUsername());
         System.out.println("Thread id: " + Thread.currentThread().getId());
         try {
             //slanje emaila
@@ -97,4 +125,12 @@ public class AuthenticationController {
         userService.updateUser(user); // Ažurirajte korisnika u bazi
         return ResponseEntity.ok().build(); // Vratite OK status bez tela odgovora
     }
+//    @RestControllerAdvice
+//    public class GlobalExceptionHandler {
+//
+//        @ExceptionHandler(ResourceConflictException.class)
+//        public ResponseEntity<String> handleConflict(ResourceConflictException ex) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+//        }
+//    }
 }

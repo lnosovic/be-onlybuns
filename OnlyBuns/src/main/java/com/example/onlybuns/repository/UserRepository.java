@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     User findByUsername(String username);
+    User getUserByEmail(String email);
     @Query("SELECT u FROM User u JOIN u.followers f WHERE f.id=:userId")
     List<User> findFollowingUsers(@Param("userId")Integer userId);
     @Query("SELECT u FROM User u JOIN u.followings f WHERE f.id=:userId")

@@ -3,6 +3,7 @@ package com.example.onlybuns.service.impl;
 import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
 import com.example.onlybuns.dto.UserViewDTO;
+import com.example.onlybuns.exception.ResourceConflictException;
 import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.Role;
 import com.example.onlybuns.model.User;
@@ -10,6 +11,7 @@ import com.example.onlybuns.repository.UserRepository;
 import com.example.onlybuns.service.RoleService;
 import com.example.onlybuns.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -67,7 +69,11 @@ public class UserServiceImpl implements UserService {
         Role role = roleService.findByName("ROLE_USER");
         u.setRole(role);
 
-        return this.userRepository.save(u);
+        try{
+            return this.userRepository.save(u);
+        }catch (DataIntegrityViolationException exception){
+            throw new ResourceConflictException(0, "Username already exists (DB constraint)");
+        }
     }
     @Override
     public User updateUser(User updatedUser) throws AccessDeniedException {
@@ -166,6 +172,11 @@ public class UserServiceImpl implements UserService {
         }
         return dtos;
     }
+    @Override
+    public User getByEmail(String email)  throws UsernameNotFoundException {
+        return userRepository.getUserByEmail(email);
+    }
+
 
     //following
     @Override
