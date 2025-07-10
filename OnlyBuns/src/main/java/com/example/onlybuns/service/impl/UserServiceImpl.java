@@ -115,6 +115,7 @@ public class UserServiceImpl implements UserService {
         return dto;
     }
     public UserViewDTO getUserByEmail(String email) throws UsernameNotFoundException {
+        System.out.println("BOZE POMOZI:"+ email);
         User user = userRepository.getUserByEmail(email);
         UserViewDTO dto = new UserViewDTO();
         dto.setId(user.getId());
