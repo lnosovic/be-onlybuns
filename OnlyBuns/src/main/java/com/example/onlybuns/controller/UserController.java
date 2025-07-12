@@ -1,6 +1,7 @@
 package com.example.onlybuns.controller;
 
 import com.example.onlybuns.dto.UserDTO;
+import com.example.onlybuns.dto.UserSearchCriteria;
 import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.model.User;
 import com.example.onlybuns.service.UserService;
@@ -12,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -130,6 +133,12 @@ public class UserController {
             System.err.println("Error checking follow status for user " + followedId + " by " + follower.getId() + ": " + e.getMessage());
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
+    }
+
+    @GetMapping("/search")
+    //@PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
+    public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
+        return userService.searchUsers(criteria);
     }
 
 }

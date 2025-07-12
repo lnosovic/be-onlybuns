@@ -2,6 +2,7 @@ package com.example.onlybuns.service;
 
 import com.example.onlybuns.dto.ChatMessageDTO;
 import com.example.onlybuns.dto.ChatMessageResponseDTO;
+import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.model.ChatMessage;
 import com.example.onlybuns.model.ChatRoom; // Pretpostavljam da ćeš vratiti ChatRoom ili DTO za nju
 import com.example.onlybuns.model.User;    // Možda će ti trebati User objekat ili njegov ID
@@ -90,4 +91,5 @@ public interface ChatService {
      * @return Lista ChatRoom objekata.
      */
     List<ChatRoom> getUserChatRooms(Principal principal);
+    List<UserViewDTO> getParticipants(Long chatRoomId);
 }

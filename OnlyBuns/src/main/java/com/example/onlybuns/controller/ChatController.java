@@ -2,8 +2,10 @@ package com.example.onlybuns.controller;
 
 import com.example.onlybuns.dto.ChatMessageDTO;
 import com.example.onlybuns.dto.ChatMessageResponseDTO;
+import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.model.ChatMessage;
 import com.example.onlybuns.model.ChatRoom;
+import com.example.onlybuns.model.User;
 import com.example.onlybuns.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -88,7 +90,8 @@ public class ChatController {
     public ResponseEntity<?> createGroupChat(@RequestBody Map<String, String> requestBody, Principal principal) {
         String groupName = requestBody.get("name");
         if (groupName == null || groupName.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Group name is required.");
+            groupName = "New Group";
+            //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Group name is required.");
         }
         try {
             ChatRoom newGroup = chatService.createGroupChat(groupName, principal);
@@ -187,5 +190,11 @@ public class ChatController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+
+    @GetMapping("/{chatRoomId}/participants")
+    public ResponseEntity<List<UserViewDTO>> getParticipants(@PathVariable Long chatRoomId) {
+        return ResponseEntity.ok(chatService.getParticipants(chatRoomId));
     }
 }

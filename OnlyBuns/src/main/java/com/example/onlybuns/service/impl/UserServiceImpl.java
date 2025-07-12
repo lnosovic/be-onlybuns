@@ -2,6 +2,7 @@ package com.example.onlybuns.service.impl;
 
 import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
+import com.example.onlybuns.dto.UserSearchCriteria;
 import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.exception.ResourceConflictException;
 import com.example.onlybuns.model.Location;
@@ -10,14 +11,21 @@ import com.example.onlybuns.model.User;
 import com.example.onlybuns.repository.UserRepository;
 import com.example.onlybuns.service.RoleService;
 import com.example.onlybuns.service.UserService;
+import com.example.onlybuns.specification.UserSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -244,6 +252,44 @@ public class UserServiceImpl implements UserService {
         }
 
         return follower.getFollowings().contains(followed);
+    }
+
+    @Override
+    public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
+        // 1. Specification
+        Specification<User> spec = UserSpecification.filterByCriteria(criteria);
+
+        // 2. Sort
+        Sort sort = Sort.by("email"); // default
+        if ("followerCount".equalsIgnoreCase(criteria.getSortBy())) {
+            sort = Sort.by("followerCount"); // assuming it's mapped
+        }
+        if ("desc".equalsIgnoreCase(criteria.getSortDirection())) {
+            sort = sort.descending();
+        } else {
+            sort = sort.ascending();
+        }
+
+        // 3. Pageable
+        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), sort);
+
+        // 4. Query
+        Page<User> users = userRepository.findAll(spec, pageable);
+
+        // 5. DTO map
+        return users.map(user -> {
+            UserViewDTO dto = new UserViewDTO();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setName(user.getName());
+            dto.setSurname(user.getSurname());
+            dto.setEmail(user.getEmail());
+            dto.setLocation(new LocationDTO(user.getAddress()));
+            dto.setPostCount(user.getPostCount());
+            dto.setFollowerCount(user.getFollowerCount());
+            dto.setFollowingCount(user.getFollowings().size());
+            return dto;
+        });
     }
 
 }

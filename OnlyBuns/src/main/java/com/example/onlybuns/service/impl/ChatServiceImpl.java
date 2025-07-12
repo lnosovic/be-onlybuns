@@ -2,6 +2,8 @@ package com.example.onlybuns.service.impl;
 
 import com.example.onlybuns.dto.ChatMessageDTO;
 import com.example.onlybuns.dto.ChatMessageResponseDTO;
+import com.example.onlybuns.dto.UserViewDTO;
+import com.example.onlybuns.mapper.UserDTOMapper;
 import com.example.onlybuns.model.ChatMessage;
 import com.example.onlybuns.model.ChatRoom;
 import com.example.onlybuns.model.User;
@@ -30,6 +32,17 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
 
     @Autowired
     private UserRepository userRepository; // Injektuješ svoj UserRepository
+
+    @Autowired
+    private  UserDTOMapper userMapper;
+
+
+    @Autowired
+    public ChatServiceImpl(ChatRoomRepository chatRoomRepository, UserDTOMapper userMapper) {
+        this.roomRepository = chatRoomRepository;
+        this.userMapper = userMapper;
+    }
+
 
     /**
      * Čuva novu poruku u bazu podataka.
@@ -328,8 +341,9 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
         for (ChatRoom room : existingPersonalChats) {
             if (!room.isGroupChat() && room.getParticipants().size() == 2) {
                 // Pronađena postojeća personalna soba između ovih korisnika
-                throw new RuntimeException("Personal chat room already exists between "
-                        + creatorUser.getUsername() + " and " + otherUser.getUsername());
+//                throw new RuntimeException("Personal chat room already exists between "
+//                        + creatorUser.getUsername() + " and " + otherUser.getUsername());
+                return room;
             }
         }
 
@@ -373,5 +387,10 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
         return userChatRooms;
     }
 
-
+    @Override
+    public List<UserViewDTO> getParticipants(Long chatRoomId) {
+        return roomRepository.findParticipantsByChatRoomId(chatRoomId).stream()
+                .map(userMapper::toDTO) // bez user u zagradi
+                .collect(Collectors.toList());
+    }
 }

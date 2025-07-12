@@ -1,7 +1,10 @@
 package com.example.onlybuns.repository;
 
+import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.model.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.example.onlybuns.model.User;
 
@@ -15,5 +18,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findByParticipantsId(Long userId);
     List<ChatRoom> findByParticipantsContains(User user);
     List<ChatRoom> findByParticipantsContainsAndParticipantsContains(User user1, User user2);
-
+    @Query("SELECT u FROM ChatRoom cr JOIN cr.participants u WHERE cr.id = :chatRoomId")
+    List<User> findParticipantsByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 }

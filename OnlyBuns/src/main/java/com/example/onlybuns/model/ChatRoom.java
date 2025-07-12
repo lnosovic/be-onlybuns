@@ -28,7 +28,7 @@ public class ChatRoom {
             joinColumns = @JoinColumn(name = "chatroom_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    @JsonIgnore
+    @JsonIgnore()
     private Set<User> participants = new HashSet<>();
 
 
