@@ -199,5 +199,24 @@ public class PostServiceImpl implements PostService {
         // Jednostavno proveravamo da li lajk postoji u bazi
         return likeRepository.findByPostIdAndUserId(postId, userId).isPresent();
     }
+    @Override
+    public List<PostViewDTO> getNearbyPosts(double lat, double lon, double radius) {
+        List<Post> posts = postRepository.getNearbyPosts(lat,lon,radius);
+        List<PostViewDTO> postDTOs = new ArrayList<>();
 
+        for(Post post:posts){
+            PostViewDTO postViewDTO = new PostViewDTO();
+            postViewDTO.setId(post.getId());
+            postViewDTO.setUserId(post.getUser().getId());
+            postViewDTO.setDescription(post.getDescription());
+            postViewDTO.setImage(post.getImage());
+            LocationDTO locationDTO = new LocationDTO(post.getLocation());
+            postViewDTO.setLocation(locationDTO);
+            postViewDTO.setTimeOfPublishing(post.getTimeOfPublishing());
+            postViewDTO.setLikes(post.getLikesCount());
+            postViewDTO.setComments(post.getComments().stream().map(CommentDTO::new).toList());
+            postDTOs.add(postViewDTO);
+        }
+        return postDTOs;
+    }
 }

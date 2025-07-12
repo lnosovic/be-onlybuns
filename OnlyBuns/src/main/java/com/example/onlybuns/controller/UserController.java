@@ -1,9 +1,14 @@
 package com.example.onlybuns.controller;
 
+import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserDTO;
 import com.example.onlybuns.dto.UserSearchCriteria;
+import com.example.onlybuns.dto.UserRequest;
 import com.example.onlybuns.dto.UserViewDTO;
+import com.example.onlybuns.mapper.UserDTOMapper;
+import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.User;
+import com.example.onlybuns.service.LocationService;
 import com.example.onlybuns.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +31,8 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private LocationService locationService;
     @GetMapping(value="/all")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
         List<User> users = userService.findAll();
@@ -133,6 +140,22 @@ public class UserController {
             System.err.println("Error checking follow status for user " + followedId + " by " + follower.getId() + ": " + e.getMessage());
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
+    }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<Void> updateUser(@PathVariable Integer id,
+                                           @RequestBody UserRequest userRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User u = (User) authentication.getPrincipal();
+        System.out.println("u.getEmail():"+u.getEmail());
+        System.out.println("userRequest,getEmail():"+userRequest.getEmail());
+        if(!u.getEmail().equals(userRequest.getEmail())){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(id != userRequest.getId())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        User user = userService.updateByUserId(id,userRequest);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/search")

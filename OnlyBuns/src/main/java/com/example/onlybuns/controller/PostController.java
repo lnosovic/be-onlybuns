@@ -148,6 +148,9 @@ public class PostController {
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
     }
-
+    @GetMapping("/nearby")
+    public List<PostViewDTO> getNearbyPosts(@RequestParam double lat, @RequestParam double lon, @RequestParam double radius){
+        return postService.getNearbyPosts(lat,lon,radius);
+    }
 
 }

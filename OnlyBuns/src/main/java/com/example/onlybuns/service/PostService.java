@@ -24,4 +24,5 @@ public interface PostService {
     void unlikePost(Integer postId, Integer userId);
     boolean isPostLikedByUser(Integer postId, Integer userId);
     // ---------------------------------
+    List<PostViewDTO> getNearbyPosts(double lat, double lon, double radius);
 }

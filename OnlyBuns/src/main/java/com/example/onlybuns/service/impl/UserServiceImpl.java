@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -257,6 +259,25 @@ public class UserServiceImpl implements UserService {
         }
 
         return follower.getFollowings().contains(followed);
+    }
+    @Override
+    public User updateByUserId(Integer id,UserRequest newUser)throws AccessDeniedException {
+        User user = userRepository.findById(id).orElseGet(null);
+        if (user == null) {
+            return null;
+        }
+        user.setName(newUser.getName());
+        user.setSurname(newUser.getSurname());
+        if(!passwordEncoder.matches(newUser.getPassword(), user.getPassword())){
+            System.out.println("Lozinka se promenila");
+            user.setLastPasswordResetDate(new Timestamp(System.currentTimeMillis()));
+            user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        }
+        Role role = roleService.findByName("ROLE_USER");
+        user.setRole(role);
+        Location location =locationServiceImpl.createLocation(newUser.getLocation());
+        user.setAddress(location);
+        return userRepository.save(user);
     }
 
     @Override
