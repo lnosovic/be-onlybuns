@@ -60,17 +60,17 @@ public class AuthenticationController {
         }
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+                    authenticationRequest.getEmail(), authenticationRequest.getPassword()));
 
             // Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
             // kontekst
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Kreiraj token za tog korisnika
-            boolean isActivated = userService.findByUsername(authenticationRequest.getUsername()).isActivated();
+            boolean isActivated = userService.getByEmail(authenticationRequest.getEmail()).isActivated();
             if (isActivated) {
                 User user = (User) authentication.getPrincipal();
-                String jwt = tokenUtils.generateToken(user.getUsername(), user.getRole().getName());
+                String jwt = tokenUtils.generateToken(user.getEmail(), user.getRole().getName());
                 int expiresIn = tokenUtils.getExpiredIn();
                 ipRateLimiter.loginSuccess(ip);
 
@@ -88,7 +88,7 @@ public class AuthenticationController {
     // Endpoint za registraciju novog korisnika
     @PostMapping("/signup")
     public ResponseEntity<User> addUser(@RequestBody UserRequest userRequest, UriComponentsBuilder ucBuilder) {
-        User existUser = this.userService.findByUsername(userRequest.getUsername());
+        User existUser = new User();
 
         if (bloomFilter.mightContain(userRequest.getUsername())) {
             System.out.println("MOZDA IPAK POSTOJI");
@@ -125,12 +125,12 @@ public class AuthenticationController {
         userService.updateUser(user); // Ažurirajte korisnika u bazi
         return ResponseEntity.ok().build(); // Vratite OK status bez tela odgovora
     }
-//    @RestControllerAdvice
-//    public class GlobalExceptionHandler {
-//
-//        @ExceptionHandler(ResourceConflictException.class)
-//        public ResponseEntity<String> handleConflict(ResourceConflictException ex) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-//        }
-//    }
+    @RestControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(ResourceConflictException.class)
+        public ResponseEntity<String> handleConflict(ResourceConflictException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        }
+    }
 }
