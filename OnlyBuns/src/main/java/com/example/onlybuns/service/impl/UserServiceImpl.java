@@ -59,6 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User save(UserRequest userRequest) {
         User u = new User();
         u.setUsername(userRequest.getUsername());
@@ -78,9 +79,13 @@ public class UserServiceImpl implements UserService {
         u.setRole(role);
 
         try{
+            Thread.sleep(3000); // 3 sekunde kašnjenje
             return this.userRepository.save(u);
         }catch (DataIntegrityViolationException exception){
-            throw new ResourceConflictException(0, "Username already exists (DB constraint)");
+            throw new ResourceConflictException(0, "Already exists in database (DB constraint)");
+        }catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread was interrupted while saving user", e);
         }
     }
     @Override
