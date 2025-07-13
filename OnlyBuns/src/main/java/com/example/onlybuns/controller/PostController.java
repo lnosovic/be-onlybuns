@@ -149,6 +149,7 @@ public class PostController {
         }
     }
     @GetMapping("/nearby")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<PostViewDTO> getNearbyPosts(@RequestParam double lat, @RequestParam double lon, @RequestParam double radius){
         return postService.getNearbyPosts(lat,lon,radius);
     }

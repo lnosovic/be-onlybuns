@@ -57,6 +57,7 @@ public class UserController {
         return userService.getFollowerUsers(userId);
     }
     @GetMapping("/top10MostUserLikes")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<UserViewDTO>> getTop10MostUserLikesInLast7Days(){
         List<UserViewDTO> users = userService.getTop10MostUserLikesInLast7Days();
         return new ResponseEntity<>(users, HttpStatus.OK);
