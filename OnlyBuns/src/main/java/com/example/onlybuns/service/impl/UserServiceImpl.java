@@ -282,27 +282,79 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
-        // 1. Specification
+
+        /* ===========================================================
+         * 1) Sortiranje po followerCount  →  custom JPQL upit
+         * =========================================================== */
+        if ("followerCount".equalsIgnoreCase(criteria.getSortBy())) {
+
+            Pageable pageable = PageRequest.of(
+                    criteria.getPage(),
+                    criteria.getSize()
+            );
+
+            // biramo ASC ili DESC varijantu
+            Page<Object[]> result = "asc".equalsIgnoreCase(criteria.getSortDirection())
+                    ? userRepository.searchByFollowerCountAsc(
+                    criteria.getName(),
+                    criteria.getSurname(),
+                    criteria.getEmail(),
+                    criteria.getMinPostCount(),
+                    criteria.getMaxPostCount(),
+                    pageable)
+                    : userRepository.searchByFollowerCountDesc(
+                    criteria.getName(),
+                    criteria.getSurname(),
+                    criteria.getEmail(),
+                    criteria.getMinPostCount(),
+                    criteria.getMaxPostCount(),
+                    pageable);
+
+            // mapiranje (row[0] = User, row[1] = Long followerCount)
+            return result.map(row -> {
+                User user          = (User) row[0];
+                Long followerCount = (Long) row[1];
+
+                UserViewDTO dto = new UserViewDTO();
+                dto.setId(user.getId());
+                dto.setUsername(user.getUsername());
+                dto.setName(user.getName());
+                dto.setSurname(user.getSurname());
+                dto.setEmail(user.getEmail());
+                dto.setPostCount(user.getPostCount());
+                dto.setFollowerCount(followerCount.intValue());
+                dto.setFollowingCount(user.getFollowings().size());
+                dto.setLocation(new LocationDTO(user.getAddress()));
+                return dto;
+            });
+        }
+
+        /* ===========================================================
+         * 2) Sve ostalo  →  Specification + klasičan Sort
+         * =========================================================== */
         Specification<User> spec = UserSpecification.filterByCriteria(criteria);
 
-        // 2. Sort
-        Sort sort = Sort.by("email"); // default
-        if ("followerCount".equalsIgnoreCase(criteria.getSortBy())) {
-            sort = Sort.by("followerCount"); // assuming it's mapped
-        }
-        if ("desc".equalsIgnoreCase(criteria.getSortDirection())) {
-            sort = sort.descending();
-        } else {
-            sort = sort.ascending();
-        }
+        // podrazumevani sort: po email-u
+        Sort sort = Sort.by("email");
+        if ("email".equalsIgnoreCase(criteria.getSortBy())) {
+            sort = Sort.by("email");
+        } else if ("username".equalsIgnoreCase(criteria.getSortBy())) {
+            sort = Sort.by("username");
+        } /* proširi po želji */
 
-        // 3. Pageable
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), sort);
+        // ASC / DESC
+        sort = "desc".equalsIgnoreCase(criteria.getSortDirection())
+                ? sort.descending()
+                : sort.ascending();
 
-        // 4. Query
+        Pageable pageable = PageRequest.of(
+                criteria.getPage(),
+                criteria.getSize(),
+                sort
+        );
+
         Page<User> users = userRepository.findAll(spec, pageable);
 
-        // 5. DTO map
         return users.map(user -> {
             UserViewDTO dto = new UserViewDTO();
             dto.setId(user.getId());
@@ -310,10 +362,10 @@ public class UserServiceImpl implements UserService {
             dto.setName(user.getName());
             dto.setSurname(user.getSurname());
             dto.setEmail(user.getEmail());
-            dto.setLocation(new LocationDTO(user.getAddress()));
             dto.setPostCount(user.getPostCount());
-            dto.setFollowerCount(user.getFollowerCount());
+            dto.setFollowerCount(user.getFollowers().size());
             dto.setFollowingCount(user.getFollowings().size());
+            dto.setLocation(new LocationDTO(user.getAddress()));
             return dto;
         });
     }
