@@ -393,4 +393,13 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
                 .map(userMapper::toDTO) // bez user u zagradi
                 .collect(Collectors.toList());
     }
+    //XD
+    @Override
+    public Integer getAdminIdForChatRoom(Long chatRoomId) {
+        Integer adminId = roomRepository.findAdminIdByChatRoomId(chatRoomId);
+        if (adminId == null) {
+            throw new IllegalStateException("Admin ID not found for ChatRoom ID: " + chatRoomId);
+        }
+        return adminId;
+    }
 }

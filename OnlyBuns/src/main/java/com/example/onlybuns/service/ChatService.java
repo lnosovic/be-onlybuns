@@ -92,4 +92,7 @@ public interface ChatService {
      */
     List<ChatRoom> getUserChatRooms(Principal principal);
     List<UserViewDTO> getParticipants(Long chatRoomId);
+
+    //
+    Integer getAdminIdForChatRoom(Long chatRoomId);
 }

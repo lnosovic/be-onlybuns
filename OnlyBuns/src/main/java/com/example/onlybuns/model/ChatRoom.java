@@ -38,6 +38,7 @@ public class ChatRoom {
 
     // Admin grupe, samo za grupne četove
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "admin_id")
     private User admin;
 

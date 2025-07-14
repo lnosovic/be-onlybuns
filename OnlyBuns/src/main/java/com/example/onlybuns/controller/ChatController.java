@@ -5,7 +5,6 @@ import com.example.onlybuns.dto.ChatMessageResponseDTO;
 import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.model.ChatMessage;
 import com.example.onlybuns.model.ChatRoom;
-import com.example.onlybuns.model.User;
 import com.example.onlybuns.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,14 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
 @RestController // Označava da je ovo RESTful kontroler
-@RequestMapping("/api/chat") // Bazna putanja za sve endpoint-e u ovom kontroleru (ili po želji npr. "/api/chatapp")
+@RequestMapping("/api/chat")
 public class ChatController {
 
     @Autowired
@@ -95,6 +93,7 @@ public class ChatController {
         }
         try {
             ChatRoom newGroup = chatService.createGroupChat(groupName, principal);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(newGroup);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -119,6 +118,8 @@ public class ChatController {
         }
         try {
             ChatRoom updatedRoom = chatService.addUserToGroup(roomId, userIdToAdd, principal);
+            messagingTemplate.convertAndSend("/topic/newChatRoom/" + userIdToAdd, updatedRoom.getId());
+
             return ResponseEntity.ok(updatedRoom);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -168,6 +169,10 @@ public class ChatController {
         }
         try {
             ChatRoom newPersonalChat = chatService.createPersonalChat(otherUserId, principal);
+
+            messagingTemplate.convertAndSend("/topic/newChatRoom/" + otherUserId, newPersonalChat.getId());
+
+
             return ResponseEntity.status(HttpStatus.CREATED).body(newPersonalChat);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -192,9 +197,18 @@ public class ChatController {
         }
     }
 
-
+    //...xd
     @GetMapping("/{chatRoomId}/participants")
     public ResponseEntity<List<UserViewDTO>> getParticipants(@PathVariable Long chatRoomId) {
         return ResponseEntity.ok(chatService.getParticipants(chatRoomId));
     }
+
+
+    @GetMapping("/{chatRoomId}/adminId")
+    //@PreAuthorize("isAuthenticated()")
+    public Integer getAdminId(@PathVariable Long chatRoomId) {
+        return chatService.getAdminIdForChatRoom(chatRoomId);
+    }
+
+
 }
