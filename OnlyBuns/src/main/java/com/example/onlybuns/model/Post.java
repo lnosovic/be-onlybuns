@@ -26,7 +26,7 @@ public class Post {
     private Location location;
     @Column(name ="time_of_publishing", nullable = false)
     private LocalDateTime timeOfPublishing;
-    @OneToMany(fetch = FetchType.EAGER,mappedBy = "post")
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "post", orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "post_user_likes",

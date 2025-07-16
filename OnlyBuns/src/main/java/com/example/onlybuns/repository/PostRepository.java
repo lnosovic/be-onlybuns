@@ -40,4 +40,9 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> getNearbyPosts(@Param("lat") double lat,
                                    @Param("lon") double lon,
                                    @Param("radius") double radiusInKm);
-}
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.timeOfPublishing BETWEEN :from AND :to")
+    Integer countByTimeOfPublishingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT COUNT(DISTINCT p.user.id) FROM Post p")
+    Long countDistinctUserId();}

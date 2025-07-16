@@ -8,6 +8,7 @@ import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.mapper.UserDTOMapper;
 import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.User;
+import com.example.onlybuns.security.auth.FollowRateLimiter;
 import com.example.onlybuns.service.LocationService;
 import com.example.onlybuns.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private FollowRateLimiter followRateLimiter;
     @Autowired
     private LocationService locationService;
     @GetMapping(value="/all")
@@ -79,6 +82,12 @@ public class UserController {
         }
         if (follower.getId().equals(followedId)) {
             return new ResponseEntity<>("Cannot follow yourself.", HttpStatus.BAD_REQUEST); // 400 Bad Request
+        }
+
+        //rate limiter check
+        if (!followRateLimiter.isAllowed(follower.getId().longValue())) {
+            return new ResponseEntity<>("You have reached the follow limit (max 50 per minute).",
+                    HttpStatus.TOO_MANY_REQUESTS); // 429
         }
 
         try {
@@ -159,7 +168,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    //@PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
     public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
         return userService.searchUsers(criteria);
     }

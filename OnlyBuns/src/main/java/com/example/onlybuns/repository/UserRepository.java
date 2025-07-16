@@ -34,7 +34,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     @Query("""
     SELECT u, COUNT(f) AS followerCount
     FROM User u
-    LEFT JOIN u.followers f
+    LEFT JOIN u.followings f
     LEFT JOIN u.posts p
     WHERE (:name IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%')))
       AND (:surname IS NULL OR LOWER(u.surname) LIKE LOWER(CONCAT('%', :surname, '%')))
@@ -55,7 +55,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     @Query("""
     SELECT u, COUNT(f) AS followerCount
     FROM User u
-    LEFT JOIN u.followers f
+    LEFT JOIN u.followings f
     LEFT JOIN u.posts p
     WHERE (:name IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%')))
       AND (:surname IS NULL OR LOWER(u.surname) LIKE LOWER(CONCAT('%', :surname, '%')))

@@ -88,7 +88,7 @@ public class ChatController {
     public ResponseEntity<?> createGroupChat(@RequestBody Map<String, String> requestBody, Principal principal) {
         String groupName = requestBody.get("name");
         if (groupName == null || groupName.trim().isEmpty()) {
-            groupName = "New Group";
+            groupName = "New Group Chat";
             //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Group name is required.");
         }
         try {

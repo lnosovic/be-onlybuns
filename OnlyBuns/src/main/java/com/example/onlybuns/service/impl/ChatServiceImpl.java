@@ -398,7 +398,8 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
     public Integer getAdminIdForChatRoom(Long chatRoomId) {
         Integer adminId = roomRepository.findAdminIdByChatRoomId(chatRoomId);
         if (adminId == null) {
-            throw new IllegalStateException("Admin ID not found for ChatRoom ID: " + chatRoomId);
+            //throw new IllegalStateException("Admin ID not found for ChatRoom ID: " + chatRoomId);
+            adminId = 0;
         }
         return adminId;
     }
