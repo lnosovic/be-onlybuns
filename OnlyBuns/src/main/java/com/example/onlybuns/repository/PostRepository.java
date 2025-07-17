@@ -35,7 +35,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     SELECT p.*
     FROM Post p
     JOIN location l ON p.location_id = l.id
-    WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(l.latitude)) *cos(radians(l.longitude) - radians(:lon)) + sin(radians(:lat)) * sin(radians(l.latitude)))) < :radius
+    WHERE (6371 * LEAST(1, GREATEST(-1, acos(
+    cos(radians(:lat)) * cos(radians(l.latitude)) *
+    cos(radians(l.longitude) - radians(:lon)) +
+    sin(radians(:lat)) * sin(radians(l.latitude))
+    )))) < :radius
     """,nativeQuery=true)
     List<Post> getNearbyPosts(@Param("lat") double lat,
                                    @Param("lon") double lon,

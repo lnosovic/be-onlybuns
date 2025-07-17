@@ -268,8 +268,8 @@ public class UserServiceImpl implements UserService {
         }
         user.setName(newUser.getName());
         user.setSurname(newUser.getSurname());
-        if(!passwordEncoder.matches(newUser.getPassword(), user.getPassword())){
-            System.out.println("Lozinka se promenila");
+        if (newUser.getPassword() != null && !newUser.getPassword().trim().isEmpty() && !passwordEncoder.matches(newUser.getPassword(), user.getPassword())) {
+            System.out.println("Password is being changed.");
             user.setLastPasswordResetDate(new Timestamp(System.currentTimeMillis()));
             user.setPassword(passwordEncoder.encode(newUser.getPassword()));
         }
