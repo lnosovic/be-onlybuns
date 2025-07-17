@@ -244,6 +244,16 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
         // Pretpostavljam da chatRoom.getParticipants() vraća modifikabilnu kolekciju (npr. Set ili List).
         chatRoom.getParticipants().add(userToAdd);
 
+
+        //7.5!!!
+        String meta = chatRoom.getParticipantsMeta();
+        if (meta == null) {
+            meta = "";
+        }
+        String newEntry = userIdToAdd + "," + LocalDateTime.now().toString() + ";";
+        chatRoom.setParticipantsMeta(meta + newEntry);
+
+
         // 8. Sačuvaj (ažuriraj) čet sobu u bazi podataka.
         return roomRepository.save(chatRoom);
     }
@@ -402,5 +412,16 @@ public class ChatServiceImpl implements ChatService { // Implementira ChatServic
             adminId = 0;
         }
         return adminId;
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public String getParticipantsMeta(Long roomId) {
+        Optional<ChatRoom> chatRoomOptional = roomRepository.findById(roomId);
+        if (chatRoomOptional.isEmpty()) {
+            throw new RuntimeException("Chat room not found with ID: " + roomId);
+        }
+        ChatRoom chatRoom = chatRoomOptional.get();
+
+        return chatRoom.getParticipantsMeta(); // assuming getter exists
     }
 }

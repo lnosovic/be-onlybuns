@@ -144,6 +144,8 @@ public class ChatController {
         }
         try {
             ChatRoom updatedRoom = chatService.removeUserFromGroup(roomId, userIdToRemove, principal);
+            messagingTemplate.convertAndSend("/topic/newChatRoom/" + userIdToRemove, updatedRoom.getId());
+
             return ResponseEntity.ok(updatedRoom);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -209,6 +211,19 @@ public class ChatController {
     public Integer getAdminId(@PathVariable Long chatRoomId) {
         return chatService.getAdminIdForChatRoom(chatRoomId);
     }
+
+    @GetMapping("/{roomId}/participants-meta")
+    //@PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> getParticipantsMeta(@PathVariable Long roomId) {
+        try {
+            String participantsMeta = chatService.getParticipantsMeta(roomId);
+            return ResponseEntity.ok(participantsMeta);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
 
 
 }

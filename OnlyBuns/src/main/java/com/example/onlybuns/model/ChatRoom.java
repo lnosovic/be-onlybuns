@@ -42,7 +42,9 @@ public class ChatRoom {
     @JoinColumn(name = "admin_id")
     private User admin;
 
-    // Getteri i Setteri
+
+    @Column(columnDefinition = "TEXT")
+    private String participantsMeta;
 
     public Long getId() {
         return id;
@@ -82,5 +84,13 @@ public class ChatRoom {
 
     public void setAdmin(User admin) {
         this.admin = admin;
+    }
+
+    public String getParticipantsMeta() {
+        return participantsMeta;
+    }
+
+    public void setParticipantsMeta(String participantsMeta) {
+        this.participantsMeta = participantsMeta;
     }
 }

@@ -95,4 +95,5 @@ public interface ChatService {
 
     //
     Integer getAdminIdForChatRoom(Long chatRoomId);
+    String getParticipantsMeta(Long roomId);
 }
