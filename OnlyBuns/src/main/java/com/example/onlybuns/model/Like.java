@@ -2,6 +2,7 @@ package com.example.onlybuns.model;
 
 import javax.persistence.*; // Potrebni JPA importi
 import java.io.Serializable; // Obavezno za klase sa kompozitnim ključem
+import java.time.LocalDateTime;
 import java.util.Objects; // Za equals i hashCode metode
 
 @Entity // Označava da je ovo JPA entitet
@@ -18,7 +19,8 @@ public class Like implements Serializable { // Entitet mora implementirati Seria
     @ManyToOne(fetch = FetchType.LAZY) // Relacija: Mnogi lajkovi pripadaju jednom korisniku
     @JoinColumn(name = "user_id", referencedColumnName = "id") // Kolona u 'post_user_likes' tabeli koja se odnosi na ID korisnika
     private User user; // Referenca na User entitet
-
+    @Column(name = "liked_at", nullable = false, updatable = false)
+    private LocalDateTime likedAt;
     // Defaultni konstruktor (obavezan za JPA)
     public Like() {
     }
@@ -28,7 +30,11 @@ public class Like implements Serializable { // Entitet mora implementirati Seria
         this.post = post;
         this.user = user;
     }
-
+    
+    @PrePersist
+    protected void onLike() {
+        likedAt = LocalDateTime.now();
+    }
     // Getteri i Setteri za 'post' i 'user' polja
     public Post getPost() {
         return post;
@@ -44,6 +50,14 @@ public class Like implements Serializable { // Entitet mora implementirati Seria
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public LocalDateTime getLikedAt() {
+        return likedAt;
+    }
+
+    public void setLikedAt(LocalDateTime likedAt) {
+        this.likedAt = likedAt;
     }
 
     // ##### KRITIČNO VAŽNO: equals() i hashCode() metode #####

@@ -22,8 +22,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     SELECT u.* , COUNT(pul.user_id) AS totalLikes
     FROM Users u 
     JOIN post_user_likes pul on u.id = pul.user_id
-    JOIN Post p ON pul.post_id = p.id
-    WHERE p.time_of_publishing >=:sevenDaysAgo
+    WHERE pul.liked_at >=:sevenDaysAgo
     GROUP BY u.id
     ORDER BY totalLikes DESC
     LIMIT 10
