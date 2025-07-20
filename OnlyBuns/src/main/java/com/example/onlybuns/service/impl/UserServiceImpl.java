@@ -2,6 +2,7 @@ package com.example.onlybuns.service.impl;
 
 import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
+import com.example.onlybuns.dto.UserSearchCriteria;
 import com.example.onlybuns.dto.UserViewDTO;
 import com.example.onlybuns.exception.ResourceConflictException;
 import com.example.onlybuns.model.Location;
@@ -10,8 +11,13 @@ import com.example.onlybuns.model.User;
 import com.example.onlybuns.repository.UserRepository;
 import com.example.onlybuns.service.RoleService;
 import com.example.onlybuns.service.UserService;
+import com.example.onlybuns.specification.UserSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User save(UserRequest userRequest) {
         User u = new User();
         u.setUsername(userRequest.getUsername());
@@ -70,9 +81,13 @@ public class UserServiceImpl implements UserService {
         u.setRole(role);
 
         try{
+            Thread.sleep(3000); // 3 sekunde kašnjenje
             return this.userRepository.save(u);
         }catch (DataIntegrityViolationException exception){
-            throw new ResourceConflictException(0, "Username already exists (DB constraint)");
+            throw new ResourceConflictException(0, "Already exists in database (DB constraint)");
+        }catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread was interrupted while saving user", e);
         }
     }
     @Override
@@ -244,6 +259,115 @@ public class UserServiceImpl implements UserService {
         }
 
         return follower.getFollowings().contains(followed);
+    }
+    @Override
+    public User updateByUserId(Integer id,UserRequest newUser)throws AccessDeniedException {
+        User user = userRepository.findById(id).orElseGet(null);
+        if (user == null) {
+            return null;
+        }
+        user.setName(newUser.getName());
+        user.setSurname(newUser.getSurname());
+        if (newUser.getPassword() != null && !newUser.getPassword().trim().isEmpty() && !passwordEncoder.matches(newUser.getPassword(), user.getPassword())) {
+            System.out.println("Password is being changed.");
+            user.setLastPasswordResetDate(new Timestamp(System.currentTimeMillis()));
+            user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        }
+        Role role = roleService.findByName("ROLE_USER");
+        user.setRole(role);
+        Location location =locationServiceImpl.createLocation(newUser.getLocation());
+        user.setAddress(location);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
+
+        /* ===========================================================
+         * 1) Sortiranje po followerCount  →  custom JPQL upit
+         * =========================================================== */
+        if ("followerCount".equalsIgnoreCase(criteria.getSortBy())) {
+
+            Pageable pageable = PageRequest.of(
+                    criteria.getPage(),
+                    criteria.getSize()
+            );
+
+            // biramo ASC ili DESC varijantu
+            Page<Object[]> result = "asc".equalsIgnoreCase(criteria.getSortDirection())
+                    ? userRepository.searchByFollowerCountAsc(
+                    criteria.getName(),
+                    criteria.getSurname(),
+                    criteria.getEmail(),
+                    criteria.getMinPostCount(),
+                    criteria.getMaxPostCount(),
+                    pageable)
+                    : userRepository.searchByFollowerCountDesc(
+                    criteria.getName(),
+                    criteria.getSurname(),
+                    criteria.getEmail(),
+                    criteria.getMinPostCount(),
+                    criteria.getMaxPostCount(),
+                    pageable);
+
+            // mapiranje (row[0] = User, row[1] = Long followerCount)
+            return result.map(row -> {
+                User user          = (User) row[0];
+                Long followerCount = (Long) row[1];
+
+                UserViewDTO dto = new UserViewDTO();
+                dto.setId(user.getId());
+                dto.setUsername(user.getUsername());
+                dto.setName(user.getName());
+                dto.setSurname(user.getSurname());
+                dto.setEmail(user.getEmail());
+                dto.setPostCount(user.getPostCount());
+                dto.setFollowerCount(followerCount.intValue());
+                dto.setFollowingCount(user.getFollowings().size());
+                dto.setLocation(new LocationDTO(user.getAddress()));
+                return dto;
+            });
+        }
+
+        /* ===========================================================
+         * 2) Sve ostalo  →  Specification + klasičan Sort
+         * =========================================================== */
+        Specification<User> spec = UserSpecification.filterByCriteria(criteria);
+
+        // podrazumevani sort: po email-u
+        Sort sort = Sort.by("email");
+        if ("email".equalsIgnoreCase(criteria.getSortBy())) {
+            sort = Sort.by("email");
+        } else if ("username".equalsIgnoreCase(criteria.getSortBy())) {
+            sort = Sort.by("username");
+        } /* proširi po želji */
+
+        // ASC / DESC
+        sort = "desc".equalsIgnoreCase(criteria.getSortDirection())
+                ? sort.descending()
+                : sort.ascending();
+
+        Pageable pageable = PageRequest.of(
+                criteria.getPage(),
+                criteria.getSize(),
+                sort
+        );
+
+        Page<User> users = userRepository.findAll(spec, pageable);
+
+        return users.map(user -> {
+            UserViewDTO dto = new UserViewDTO();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setName(user.getName());
+            dto.setSurname(user.getSurname());
+            dto.setEmail(user.getEmail());
+            dto.setPostCount(user.getPostCount());
+            dto.setFollowerCount(user.getFollowers().size());
+            dto.setFollowingCount(user.getFollowings().size());
+            dto.setLocation(new LocationDTO(user.getAddress()));
+            return dto;
+        });
     }
 
 }

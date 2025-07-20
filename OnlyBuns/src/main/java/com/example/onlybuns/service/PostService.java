@@ -11,9 +11,9 @@ public interface PostService {
     List<PostViewDTO> getAllUserPosts(Integer userId);
     int getAllPostsCount();
     int getPostsCountInLastMonth();
-    @Cacheable(cacheNames = "5mostLikedPostsInLast7Days")
+    @Cacheable("5mostLikedPostsInLast7Days")
     List<PostViewDTO> getTop5MostLikedPostsInLast7Days();
-    @Cacheable(cacheNames = "mostLikedPostsEver")
+    @Cacheable("mostLikedPostsEver")
     List<PostViewDTO> getTop10MostLikedPostsEver();
     @CacheEvict(cacheNames = {"5mostLikedPostsInLast7Days","mostLikedPostsEver"}, allEntries = true)
     void removeFromCache();
@@ -24,4 +24,7 @@ public interface PostService {
     void unlikePost(Integer postId, Integer userId);
     boolean isPostLikedByUser(Integer postId, Integer userId);
     // ---------------------------------
+    List<PostViewDTO> getNearbyPosts(double lat, double lon, double radius);
+    void deletePost(Long postId);
+    PostViewDTO updateDescription(Long postId, String newDescription);
 }

@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.example.onlybuns.mapper.PostDTOMapper;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -199,5 +200,51 @@ public class PostServiceImpl implements PostService {
         // Jednostavno proveravamo da li lajk postoji u bazi
         return likeRepository.findByPostIdAndUserId(postId, userId).isPresent();
     }
+    @Override
+    public List<PostViewDTO> getNearbyPosts(double lat, double lon, double radius) {
+        List<Post> posts = postRepository.getNearbyPosts(lat,lon,radius);
+        List<PostViewDTO> postDTOs = new ArrayList<>();
 
+        for(Post post:posts){
+            PostViewDTO postViewDTO = new PostViewDTO();
+            postViewDTO.setId(post.getId());
+            postViewDTO.setUserId(post.getUser().getId());
+            postViewDTO.setDescription(post.getDescription());
+            postViewDTO.setImage(post.getImage());
+            LocationDTO locationDTO = new LocationDTO(post.getLocation());
+            postViewDTO.setLocation(locationDTO);
+            postViewDTO.setTimeOfPublishing(post.getTimeOfPublishing());
+            postViewDTO.setLikes(post.getLikesCount());
+            postViewDTO.setComments(post.getComments().stream().map(CommentDTO::new).toList());
+            postDTOs.add(postViewDTO);
+        }
+        return postDTOs;
+    }
+
+    @Override
+    public void deletePost(Long postId) {
+        if (!postRepository.existsById(postId.intValue())) {
+            throw new RuntimeException("Post not found with id: " + postId);
+        }
+        postRepository.deleteById(postId.intValue());
+    }
+
+    @Override
+    public PostViewDTO updateDescription(Long postId, String newDescription) {
+        Post post = postRepository.findById(postId.intValue())
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+        post.setDescription(newDescription);
+        Post updatedPost = postRepository.save(post);
+        PostViewDTO postViewDTO = new PostViewDTO();
+        postViewDTO.setId(updatedPost.getId());
+        postViewDTO.setUserId(updatedPost.getUser().getId());
+        postViewDTO.setDescription(updatedPost.getDescription());
+        postViewDTO.setImage(updatedPost.getImage());
+        LocationDTO locationDTO = new LocationDTO(updatedPost.getLocation());
+        postViewDTO.setLocation(locationDTO);
+        postViewDTO.setTimeOfPublishing(updatedPost.getTimeOfPublishing());
+        postViewDTO.setLikes(updatedPost.getLikesCount());
+        postViewDTO.setComments(updatedPost.getComments().stream().map(CommentDTO::new).toList());
+        return postViewDTO;
+    }
 }

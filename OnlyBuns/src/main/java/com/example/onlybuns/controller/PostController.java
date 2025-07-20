@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value="api/posts")
@@ -148,6 +149,42 @@ public class PostController {
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
     }
+    @GetMapping("/nearby")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public List<PostViewDTO> getNearbyPosts(@RequestParam double lat, @RequestParam double lon, @RequestParam double radius){
+        return postService.getNearbyPosts(lat,lon,radius);
+    }
 
+    @PatchMapping("/{id}")
+   // @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PostViewDTO> updateDescription(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        String newDescription = body.get("description");
+        if (newDescription == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        PostViewDTO updatedPostDTO = postService.updateDescription(id, newDescription);
+        return ResponseEntity.ok(updatedPostDTO);
+    }
+
+
+    @DeleteMapping("/{id}")
+   // @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postService.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/clearCache")
+    public ResponseEntity<String> clearCache() {
+        try{
+            postService.removeFromCache();
+            return new ResponseEntity<>("Cache cleared successfully",HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>("Error cleaning cache",HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }

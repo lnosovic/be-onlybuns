@@ -7,12 +7,18 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="OnlyBuns" />
+        <module name="demo" />
+        <module name="rabbitmq-producer-example" />
+        <module name="CustomMQ" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="CustomMQ" options="-parameters" />
       <module name="OnlyBuns" options="-parameters" />
+      <module name="demo" options="-parameters" />
+      <module name="rabbitmq-producer-example" options="-parameters" />
     </option>
   </component>
 </project>

@@ -1,8 +1,12 @@
 package com.example.onlybuns.service;
 
+import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserRequest;
+import com.example.onlybuns.dto.UserSearchCriteria;
 import com.example.onlybuns.dto.UserViewDTO;
+import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.User;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -22,4 +26,6 @@ public interface UserService {
     void followUser(Integer followerId, Integer followedId);
     void unfollowUser(Integer followerId, Integer followedId);
     boolean isFollowing(Integer followerId, Integer followedId);
+    Page<UserViewDTO> searchUsers(UserSearchCriteria criteria);
+    User updateByUserId(Integer id, UserRequest user);
 }

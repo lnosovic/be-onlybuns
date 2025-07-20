@@ -1,8 +1,15 @@
 package com.example.onlybuns.controller;
 
+import com.example.onlybuns.dto.LocationDTO;
 import com.example.onlybuns.dto.UserDTO;
+import com.example.onlybuns.dto.UserSearchCriteria;
+import com.example.onlybuns.dto.UserRequest;
 import com.example.onlybuns.dto.UserViewDTO;
+import com.example.onlybuns.mapper.UserDTOMapper;
+import com.example.onlybuns.model.Location;
 import com.example.onlybuns.model.User;
+import com.example.onlybuns.security.auth.FollowRateLimiter;
+import com.example.onlybuns.service.LocationService;
 import com.example.onlybuns.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,6 +32,10 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private FollowRateLimiter followRateLimiter;
+    @Autowired
+    private LocationService locationService;
     @GetMapping(value="/all")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
         List<User> users = userService.findAll();
@@ -47,6 +60,7 @@ public class UserController {
         return userService.getFollowerUsers(userId);
     }
     @GetMapping("/top10MostUserLikes")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<UserViewDTO>> getTop10MostUserLikesInLast7Days(){
         List<UserViewDTO> users = userService.getTop10MostUserLikesInLast7Days();
         return new ResponseEntity<>(users, HttpStatus.OK);
@@ -69,6 +83,12 @@ public class UserController {
         }
         if (follower.getId().equals(followedId)) {
             return new ResponseEntity<>("Cannot follow yourself.", HttpStatus.BAD_REQUEST); // 400 Bad Request
+        }
+
+        //rate limiter check
+        if (!followRateLimiter.isAllowed(follower.getId().longValue())) {
+            return new ResponseEntity<>("You have reached the follow limit (max 50 per minute).",
+                    HttpStatus.TOO_MANY_REQUESTS); // 429
         }
 
         try {
@@ -130,6 +150,28 @@ public class UserController {
             System.err.println("Error checking follow status for user " + followedId + " by " + follower.getId() + ": " + e.getMessage());
             return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
+    }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<Void> updateUser(@PathVariable Integer id,
+                                           @RequestBody UserRequest userRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User u = (User) authentication.getPrincipal();
+        System.out.println("u.getEmail():"+u.getEmail());
+        System.out.println("userRequest,getEmail():"+userRequest.getEmail());
+        if(!u.getEmail().equals(userRequest.getEmail())){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(id != userRequest.getId())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        User user = userService.updateByUserId(id,userRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/search")
+    //@PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
+    public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
+        return userService.searchUsers(criteria);
     }
 
 }
