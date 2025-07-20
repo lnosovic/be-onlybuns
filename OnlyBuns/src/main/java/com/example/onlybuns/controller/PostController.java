@@ -177,5 +177,14 @@ public class PostController {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
+    @PostMapping("/clearCache")
+    public ResponseEntity<String> clearCache() {
+        try{
+            postService.removeFromCache();
+            return new ResponseEntity<>("Cache cleared successfully",HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>("Error cleaning cache",HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }

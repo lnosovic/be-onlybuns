@@ -8,11 +8,13 @@
         <outputRelativeToContentRoot value="true" />
         <module name="rabbitmq-producer-example" />
         <module name="OnlyBuns" />
+        <module name="CustomMQ" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="CustomMQ" options="-parameters" />
       <module name="OnlyBuns" options="-parameters" />
       <module name="rabbitmq-producer-example" options="-parameters" />
     </option>
