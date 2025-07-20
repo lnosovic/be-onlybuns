@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.7.xsd">
 
     <!-- Persistent cache directory -->
-    <persistence directory="onlyBuns/cache" />
+<!--    <persistence directory="onlyBuns/cache" />-->
 
     <!-- Default cache template -->
     <cache-template name="default">

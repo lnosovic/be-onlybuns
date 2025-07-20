@@ -169,7 +169,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
+    //@PreAuthorize("hasAnyRole('USER', 'ADMIN')") // Only registered users can check
     public Page<UserViewDTO> searchUsers(UserSearchCriteria criteria) {
         return userService.searchUsers(criteria);
     }

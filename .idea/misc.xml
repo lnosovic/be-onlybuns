@@ -6,6 +6,7 @@
       <list>
         <option value="$PROJECT_DIR$/OnlyBuns/pom.xml" />
         <option value="$PROJECT_DIR$/rabbitmq-producer-example/pom.xml" />
+        <option value="$PROJECT_DIR$/loadbalancer/demo/pom.xml" />
       </list>
     </option>
   </component>
