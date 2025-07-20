@@ -15,7 +15,7 @@ insert into comment(user_id,post_id,text,created_at) values(1,1,'Good Work!!','2
 
 insert into user_relationships(follower_user_id,followed_user_id) values(1,2);
 
-insert into post_user_likes(post_id,user_id) values(1,1)
+insert into post_user_likes(post_id,user_id,liked_at) values(1,1,'2025-07-19 21:30:00')
 
 insert into rabbit_care(name,longitude,latitude,country,city) values('ZecVet Centar Sabac',19.69,44.74,'Serbia','Sabac')
 insert into rabbit_care(name,longitude,latitude,country,city) values('Rabbit Wellness Sremska Mitrovica',19.61,44.97,'Serbia','Sremska Mitrovica')
